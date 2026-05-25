@@ -6,11 +6,13 @@
 #include <Arduino.h>
 
 #include "configs.h"
-#include "Adafruit_MAX1704X.h"
 #include "utils.h"
 #include "logger.h"
 
-#include <Wire.h>
+#ifdef HAS_BATTERY
+  #include "Adafruit_MAX1704X.h"
+  #include <Wire.h>
+#endif
 
 #define IP5306_ADDR 0x75
 #define MAX17048_ADDR 0x36
@@ -18,7 +20,9 @@
 class BatteryInterface {
   private:
     uint32_t initTime = 0;
-    Adafruit_MAX17048 maxlipo;
+    #ifdef HAS_BATTERY
+      Adafruit_MAX17048 maxlipo;
+    #endif
 
   public:
     int8_t battery_level = 0;

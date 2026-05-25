@@ -1,5 +1,37 @@
 #include "Switches.h"
 
+#ifdef HAS_TOUCH
+	#include <XPT2046_Touchscreen.h>
+
+	extern SPIClass sharedSPI;
+
+	static XPT2046_Touchscreen touchscreen(TOUCH_CS);
+	static bool touchscreen_initialized = false;
+
+	static int activeTouchButton() {
+		if (!touchscreen_initialized) {
+			pinMode(TOUCH_CS, OUTPUT);
+			digitalWrite(TOUCH_CS, HIGH);
+			touchscreen.begin(sharedSPI);
+			touchscreen.setRotation(0);
+			touchscreen_initialized = true;
+		}
+
+		if (!touchscreen.touched())
+			return -1;
+
+		TS_Point point = touchscreen.getPoint();
+		uint16_t touchY = constrain(map(point.x, 200, 3700, 1, TFT_HEIGHT), 0, TFT_HEIGHT - 1);
+
+		if (touchY < (TFT_HEIGHT / 3))
+			return TOUCH_BTN_UP;
+		if (touchY < ((TFT_HEIGHT / 3) * 2))
+			return TOUCH_BTN_SELECT;
+
+		return TOUCH_BTN_DOWN;
+	}
+#endif
+
 Switches::Switches() {
 	this->pin = 0;
 	this->pin = false;
@@ -8,7 +40,9 @@ Switches::Switches() {
 	this->cur_hold = 0;
 	this->isheld = false;
 	
-	pinMode(this->pin, INPUT);
+	#ifndef HAS_TOUCH
+	  pinMode(this->pin, INPUT);
+	#endif
 	
 	return;
 }
@@ -21,10 +55,12 @@ Switches::Switches(int pin, uint32_t hold_lim, bool pullup) {
 	this->cur_hold = 0;
 	this->isheld = false;
 	
-  if (pullup)
-  	pinMode(this->pin, INPUT_PULLUP);
-  else
-    pinMode(this->pin, INPUT_PULLDOWN);
+	#ifndef HAS_TOUCH
+		if (pullup)
+			pinMode(this->pin, INPUT_PULLUP);
+		else
+			pinMode(this->pin, INPUT_PULLDOWN);
+	#endif
 	
 	return;
 }
@@ -42,6 +78,10 @@ bool Switches::isHeld() {
 }
 
 bool Switches::getButtonState() {
+	#ifdef HAS_TOUCH
+	  return activeTouchButton() == this->pin;
+	#endif
+
 	int buttonState = digitalRead(this->pin);
 	
 	if ((this->pullup) && (buttonState == LOW))

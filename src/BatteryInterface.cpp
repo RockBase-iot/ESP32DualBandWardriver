@@ -89,6 +89,10 @@ void BatteryInterface::RunSetup() {
 
 int8_t BatteryInterface::getBatteryLevel() {
 
+  #ifndef HAS_BATTERY
+    return 0;
+  #else
+
   if (this->has_ip5306) {
     Wire.beginTransmission(IP5306_ADDR);
     Wire.write(0x78);
@@ -121,4 +125,5 @@ int8_t BatteryInterface::getBatteryLevel() {
   }
 
   return 0;
+  #endif
 }

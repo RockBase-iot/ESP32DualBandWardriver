@@ -6,7 +6,11 @@
 
 Display::Display(SPIClass* spi, int cs, int dc, int rst)
   : _spi(spi), _cs(cs), _dc(dc), _rst(rst) {
+  #ifdef NM_CYD_C5
+    tft = new Adafruit_ST7789(_spi, _cs, _dc, _rst);
+  #else
     tft = new Adafruit_ST7735(_spi, _cs, _dc, _rst);
+  #endif
 }
 
 void Display::begin() {
@@ -14,8 +18,9 @@ void Display::begin() {
   
   this->ctrlBacklight(false);
 
-  //tft.init();
-  #ifndef JCMK_HOST_BOARD
+  #ifdef NM_CYD_C5
+    tft->init(TFT_HEIGHT, TFT_WIDTH);
+  #elif !defined(JCMK_HOST_BOARD)
     tft->initR(INITR_MINI160x80_PLUGIN);
   #else
     tft->initR(INITR_MINI160x80);

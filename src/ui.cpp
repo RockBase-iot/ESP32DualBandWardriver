@@ -178,7 +178,7 @@ void UI::updateStats(uint32_t currentTime, uint32_t wifiCount, uint32_t count2g4
   lastUpdateTime = currentTime;
 
   display.tft->setRotation(3);  // Landscape mode
-  display.tft->fillRect(0, 0, 160, 80, ST77XX_BLACK);  // Clear top half
+  display.tft->fillRect(0, 0, TFT_WIDTH, TFT_HEIGHT, ST77XX_BLACK);
 
   display.tft->setTextColor(ST77XX_WHITE);
   display.tft->setTextSize(1);

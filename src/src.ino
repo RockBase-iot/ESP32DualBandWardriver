@@ -75,8 +75,10 @@ void setup() {
   sd_obj.runUpdate();
 
   // Init battery
-  battery.RunSetup();
-  battery.battery_level = battery.getBatteryLevel();
+  #ifdef HAS_BATTERY
+    battery.RunSetup();
+    battery.battery_level = battery.getBatteryLevel();
+  #endif
 
   // Init GPS
   gps.begin();
@@ -101,7 +103,9 @@ void loop() {
   // Refresh all functions
   wifi_ops.main(currentTime);
   settings.main(currentTime);
-  battery.main(currentTime);
+  #ifdef HAS_BATTERY
+    battery.main(currentTime);
+  #endif
   gps.main();
   sd_obj.main();
   buffer.save();

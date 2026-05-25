@@ -21,11 +21,23 @@
 28 ACT LED
 */
 
-#define JCMK_HOST_BOARD
+#define NM_CYD_C5
+
+#if !defined(NM_CYD_C5)
+  #define JCMK_HOST_BOARD
+#endif
+
+#if defined(NM_CYD_C5) && defined(JCMK_HOST_BOARD)
+  #error "Define only one host board: NM_CYD_C5 or JCMK_HOST_BOARD"
+#endif
 
 //// Firmware info stuff
 #define FIRMWARE_VERSION "v2.2.0"
-#define DEVICE_NAME      "JCMK C5 Wardriver"
+#ifdef NM_CYD_C5
+  #define DEVICE_NAME    "NM-CYD-C5 Wardriver"
+#else
+  #define DEVICE_NAME    "JCMK C5 Wardriver"
+#endif
 
 //// Role stuff
 #define SOLO
@@ -57,33 +69,60 @@
 
 
 //// LED stuff
-#define LED_PIN 28
+#ifdef NM_CYD_C5
+  #define LED_PIN 27
+#else
+  #define LED_PIN 28
+#endif
 
 
 //// Display stuff
 #define ON  HIGH
 #define OFF LOW
 
-#define TFT_HEIGHT 80
-#define TFT_WIDTH  160
+#ifdef NM_CYD_C5
+  #define TFT_HEIGHT 240
+  #define TFT_WIDTH  320
+#else
+  #define TFT_HEIGHT 80
+  #define TFT_WIDTH  160
+#endif
 
 #define TFT_SPI_SPEED 27000000
 
 #define TFT_CS   23
 #define TFT_DC   24
 #define TFT_RST  -1
-#define TOUCH_CS -1
 #define TFT_MOSI 7
 #define TFT_SCLK 6
-#define TFT_BL   27
+
+#ifdef NM_CYD_C5
+  #define HAS_TOUCH
+  #define TOUCH_CS 1
+  #define TOUCH_IRQ -1
+  #define TFT_BL   25
+#else
+  #define TOUCH_CS -1
+  #define TFT_BL   27
+#endif
 
 
 //// UI Stuff
 #define UI_UPDATE_TIME 1 * 1000 // 1 second
 
-#define U_BTN 9
-#define D_BTN 8
-#define C_BTN 1
+#ifdef NM_CYD_C5
+  #define TOUCH_BTN_UP 0
+  #define TOUCH_BTN_SELECT 1
+  #define TOUCH_BTN_DOWN 2
+
+  #define U_BTN TOUCH_BTN_UP
+  #define D_BTN TOUCH_BTN_DOWN
+  #define C_BTN TOUCH_BTN_SELECT
+#else
+  #define U_BTN 9
+  #define D_BTN 8
+  #define C_BTN 1
+#endif
 
 #define C_PULL false
 #define U_PULL false
@@ -105,15 +144,22 @@
 
 
 //// Battery stuff
-#define HAS_BATTERY
-#define I2C_SCL 4
-#define I2C_SDA 5
+#ifndef NM_CYD_C5
+  #define HAS_BATTERY
+  #define I2C_SCL 4
+  #define I2C_SDA 5
+#endif
 
 
 //// GPS stuff
 #define GPS_SERIAL_INDEX 1
-#define TX_TO_GPS 13
-#define RX_TO_GPS 14
+#ifdef NM_CYD_C5
+  #define TX_TO_GPS 5
+  #define RX_TO_GPS 4
+#else
+  #define TX_TO_GPS 13
+  #define RX_TO_GPS 14
+#endif
 
 
 //// SD stuff

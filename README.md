@@ -26,34 +26,34 @@ Join **#wardriving** on [Wigle](https://wigle.net/stats#groupstats) and **KokosS
 **IMPORTANT: If you are using the ESP32-C5-DevKitC-1 with the JCMK C5 Wardriver host board or you are powering your DevKit via the 3V3 pin, you much remove the [3V3 jumper](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c5/esp32-c5-devkitc-1/user_guide.html#current-measurement) from the DevKit or your device will not power properly**
 
 ### [Display](https://a.co/d/dO8M3Ec)
-| ESP32-C5 | Display |
-| -------- | -- |
-| `3V3`    | `VCC` |
-| `GND`    | `GND` |
-| `GPIO6`  | `SCK` |
-| `GPIO7`  | `MOSI` |
-| `GPIO23` | `CS` |
-| `GPIO24` | `DC` |
-| `GPIO27` | `BL` |
-| `RST`    | `RST` |
+| NM-CYD-C5 | ESP32-C5 | Display |
+| -------- | -------- | -- |
+| `3V3`    | `3V3`    | `VCC` |
+| `GND`    | `GND`    | `GND` |
+| `GPIO6`  | `GPIO6`  | `SCK` |
+| `GPIO7`  | `GPIO7`  | `MOSI` |
+| `GPIO23` | `GPIO23` | `CS` |
+| `GPIO24` | `GPIO24` | `DC` |
+| `GPIO25` | `GPIO27` | `BL` |
+| `RST`    | `RST` | `RST` |
 
 ### [GPS](https://a.co/d/hIqIitg)
-| ESP32-C5 | GPS |
-| -------- | --- |
-| `3V3`    | `VCC` |
-| `GND`    | `GND` |
-| `GPIO13` | `RX` |
-| `GPIO14` | `TX` |
+| NM-CYD-C5 | ESP32-C5 | GPS |
+| -------- | -------- | --- |
+| `3V3`    | `3V3`    | `VCC` |
+| `GND`    | `GND`    | `GND` |
+| `GPIO4` | `GPIO13` | `RX` |
+| `GPIO5` | `GPIO14` | `TX` |
 
 ### [SD Card](https://www.sparkfun.com/sparkfun-microsd-transflash-breakout.html)
-| ESP32-C5 | SD |
-| -------- | -- |
-| `3V3`    | `VCC` |
-| `GND`    | `GND` |
-| `GPIO6`  | `SCK` |
-| `GPIO2`  | `MISO` |
-| `GPIO7`  | `MOSI` |
-| `GPIO10` | `CS` |
+| NM-CYD-C5 | ESP32-C5 | SD |
+| -------- | -------- | -- |
+| `3V3`    | `3V3`    | `VCC` |
+| `GND`    | `GND`    | `GND` |
+| `GPIO6`  | `GPIO6`  | `SCK` |
+| `GPIO2`  | `GPIO2`  | `MISO` |
+| `GPIO7`  | `GPIO7`  | `MOSI` |
+| `GPIO10` | `GPIO10` | `CS` |
 
 ### [Battery Fuel Gauge](https://www.adafruit.com/product/5580?srsltid=AfmBOorF18oKQ_UTmewFqWVfryc6hovloBa6APF5GGIUm1mz5bNJcq-2)
 | Board | ESP32-C5 | Button |
@@ -65,10 +65,10 @@ Join **#wardriving** on [Wigle](https://wigle.net/stats#groupstats) and **KokosS
 | `Battery +` | | `BAT` |
 
 ### Activity LED
-| ESP32-C5 | LED |
-| -------- | --- |
-| `GPIO28` | `+` |
-| `GND`    | `-` |
+| NM-CYD-C5 | ESP32-C5 | LED |
+| -------- | -------- | --- |
+| `GPIO27` | `GPIO28` | `+` |
+| `GND`    | `GND`    | `-` |
 
 ### User Buttons
 The User Buttons require pull-down resistors
@@ -77,6 +77,8 @@ The User Buttons require pull-down resistors
 | `GPIO8` | `DOWN` |
 | `GPIO9` | `UP` |
 | `GPIO15` | `SELECT` |
+
+*The NM-CYD-C5 use the TouchScreen to replace the User Buttons*
 
 ## Install Firmware
 1. Clone this repo

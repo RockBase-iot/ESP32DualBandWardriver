@@ -4,10 +4,16 @@
 #include <FS.h>
 #include <LinkedList.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_ST7735.h>
-#include <functional>
 
 #include "configs.h"
+
+#ifdef NM_CYD_C5
+  #include <Adafruit_ST7789.h>
+#else
+  #include <Adafruit_ST7735.h>
+#endif
+#include <functional>
+
 #include "assets.h"
 
 #include "BatteryInterface.h"
@@ -24,7 +30,11 @@ class Display {
   public:
     int _cs, _dc, _rst;
     Display(SPIClass* spi, int cs, int dc, int rst);
-    Adafruit_ST7735* tft;
+    #ifdef NM_CYD_C5
+      Adafruit_ST7789* tft;
+    #else
+      Adafruit_ST7735* tft;
+    #endif
 
     void begin();
     void main(uint32_t currentTime);
