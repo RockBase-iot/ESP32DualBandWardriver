@@ -19,7 +19,7 @@ void Display::begin() {
   this->ctrlBacklight(false);
 
   #ifdef NM_CYD_C5
-    tft->init(TFT_HEIGHT, TFT_WIDTH);
+    tft->init(TFT_WIDTH, TFT_HEIGHT);
   #elif !defined(JCMK_HOST_BOARD)
     tft->initR(INITR_MINI160x80_PLUGIN);
   #else
@@ -31,51 +31,67 @@ void Display::begin() {
   this->clearScreen();
   
   tft->setTextWrap(false);
+  tft->setRotation(TFT_ROTATION);
 
-  tft->setRotation(3);
-
-  this->drawMonochromeImage160x80(logo2, 160, 80);
-
+  this->drawMonochromeImageCentered(logo2, 160, 80);
   this->ctrlBacklight(true);
 }
 
-void Display::drawCenteredText(String text, bool centerVertically) {
-  tft->setRotation(3);  // Landscape
-  tft->setTextSize(1);  // 6x8 per char
+void Display::drawCenteredText(String text, bool centerVertically, uint8_t textSize) {
+  tft->setRotation(TFT_ROTATION);
+  tft->setTextSize(textSize);
   tft->setTextColor(ST77XX_WHITE, ST77XX_BLACK);
   tft->setTextWrap(false);
 
-  uint8_t charWidth = 6;
-  uint8_t charHeight = 8;
+  uint16_t charWidth = 6 * textSize;
+  uint16_t charHeight = 8 * textSize;
 
   uint16_t textWidth = text.length() * charWidth;
   uint16_t textHeight = charHeight;
 
-  uint16_t x = (TFT_WIDTH - textWidth) / 2;
-  uint16_t y = centerVertically ? (TFT_HEIGHT - textHeight) / 2 : tft->getCursorY();
+  uint16_t screenWidth = tft->width();
+  uint16_t screenHeight = tft->height();
+  uint16_t x = textWidth < screenWidth ? (screenWidth - textWidth) / 2 : 0;
+  uint16_t y = centerVertically && textHeight < screenHeight ? (screenHeight - textHeight) / 2 : tft->getCursorY();
 
   tft->setCursor(x, y);
   tft->print(text);
 }
 
 // https://javl.github.io/image2cpp/
-void Display::drawMonochromeImage160x80(const uint8_t* imageData, int width, int height) {
+void Display::drawMonochromeImageCentered(const uint8_t* imageData, int width, int height) {
+  int screenWidth = tft->width();
+  int screenHeight = tft->height();
+  int targetWidth = min(screenWidth - 16, width * 2);
+  int targetHeight = (targetWidth * height) / width;
+
+  if (targetHeight > screenHeight - 16) {
+    targetHeight = screenHeight - 16;
+    targetWidth = (targetHeight * width) / height;
+  }
+
+  if (targetWidth < width || targetHeight < height) {
+    targetWidth = width;
+    targetHeight = height;
+  }
+
+  int startX = (screenWidth - targetWidth) / 2;
+  int startY = (screenHeight - targetHeight) / 2;
+
   tft->startWrite();
 
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      int byteIndex = (y * (width / 8)) + (x / 8);
+  for (int y = 0; y < targetHeight; y++) {
+    int srcY = (y * height) / targetHeight;
+    for (int x = 0; x < targetWidth; x++) {
+      int srcX = (x * width) / targetWidth;
+      int byteIndex = (srcY * (width / 8)) + (srcX / 8);
       uint8_t byteVal = pgm_read_byte(&imageData[byteIndex]);
 
       // MSB first (bit 7 is leftmost pixel)
-      bool pixelOn = (byteVal >> (7 - (x % 8))) & 0x01;
+      bool pixelOn = (byteVal >> (7 - (srcX % 8))) & 0x01;
       uint16_t color = pixelOn ? ST77XX_WHITE : ST77XX_BLACK;
 
-      // Adjust for rotation 3 (landscape)
-      int x_rot = x;
-      int y_rot = y;
-
-      tft->writePixel(x_rot, y_rot, color);
+      tft->writePixel(startX + x, startY + y, color);
     }
   }
 

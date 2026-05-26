@@ -146,42 +146,43 @@ void UI::printFirmwareVersion() {
 }
 
 void UI::printBatteryLevel(int8_t batteryLevel) {
-    display.tft->setRotation(3);  // Landscape
-    display.tft->setTextSize(1);  // 6px per char
-    display.tft->setTextColor(ST77XX_WHITE, ST77XX_BLACK);
+  display.tft->setRotation(TFT_ROTATION);
+  display.tft->setTextSize(UI_SMALL_TEXT_SIZE);
+  display.tft->setTextColor(ST77XX_WHITE, ST77XX_BLACK);
 
-    // Format battery string
-    char buf[12];
-    snprintf(buf, sizeof(buf), "Bat: %d%%", batteryLevel);
+  // Format battery string
+  char buf[12];
+  snprintf(buf, sizeof(buf), "Bat: %d%%", batteryLevel);
 
-    // Compute text width and cursor position
-    uint8_t charWidth = 6;
-    uint16_t textWidth = (strlen(buf) + 5) * charWidth;
-    uint16_t x = TFT_WIDTH - textWidth - 2;  // Right-aligned with 2px padding
-    uint16_t y = 0;  // Adjust based on layout
+  // Compute text width and cursor position
+  uint8_t charWidth = 6 * UI_SMALL_TEXT_SIZE;
+  uint16_t textWidth = (strlen(buf) + 5) * charWidth;
+  uint16_t screenWidth = display.tft->width();
+  uint16_t x = textWidth < screenWidth ? screenWidth - textWidth - 2 : 0;
+  uint16_t y = 0;  // Adjust based on layout
 
-    display.tft->setCursor(x, y);
-    if (sd_obj.supported)
-      display.tft->setTextColor(ST77XX_GREEN, ST77XX_BLACK);
-    else
-      display.tft->setTextColor(ST77XX_RED, ST77XX_BLACK);
-    display.tft->print("SD");
-    display.tft->setTextColor(ST77XX_WHITE, ST77XX_BLACK);
-    if (battery.i2c_supported) {
-      display.tft->print(" | ");
-      display.tft->print(buf);
-    }
+  display.tft->setCursor(x, y);
+  if (sd_obj.supported)
+    display.tft->setTextColor(ST77XX_GREEN, ST77XX_BLACK);
+  else
+    display.tft->setTextColor(ST77XX_RED, ST77XX_BLACK);
+  display.tft->print("SD");
+  display.tft->setTextColor(ST77XX_WHITE, ST77XX_BLACK);
+  if (battery.i2c_supported) {
+    display.tft->print(" | ");
+    display.tft->print(buf);
+  }
 }
 
 void UI::updateStats(uint32_t currentTime, uint32_t wifiCount, uint32_t count2g4, uint32_t count5g, uint32_t bleCount, int gpsSats, int8_t batteryLevel, bool do_now) {
   if ((currentTime - lastUpdateTime < UI_UPDATE_TIME) && (!do_now)) return;
   lastUpdateTime = currentTime;
 
-  display.tft->setRotation(3);  // Landscape mode
-  display.tft->fillRect(0, 0, TFT_WIDTH, TFT_HEIGHT, ST77XX_BLACK);
+  display.tft->setRotation(TFT_ROTATION);
+  display.tft->fillRect(0, 0, display.tft->width(), display.tft->height(), ST77XX_BLACK);
 
   display.tft->setTextColor(ST77XX_WHITE);
-  display.tft->setTextSize(1);
+  display.tft->setTextSize(UI_TEXT_SIZE);
 
   this->printFirmwareVersion();
   this->printBatteryLevel(batteryLevel);
@@ -205,14 +206,13 @@ void UI::updateStats(uint32_t currentTime, uint32_t wifiCount, uint32_t count2g4
 
 
     display.tft->print("2.4GHz: ");
-    display.tft->print(count2g4);
-    display.tft->print(" | ");
+    display.tft->println(count2g4);
     display.tft->print("5GHz: ");
     display.tft->println(count5g);
 
     display.tft->print("BLE: ");
-    display.tft->print(bleCount);
-    display.tft->print(" | GPS Sats: ");
+    display.tft->println(bleCount);
+    display.tft->print("GPS Sats: ");
     display.tft->println(gpsSats > 0 ? String(gpsSats) : "No Fix");
 
     display.tft->println();
@@ -238,7 +238,7 @@ void UI::updateStats(uint32_t currentTime, uint32_t wifiCount, uint32_t count2g4
 
     display.tft->println();
 
-    display.tft->setTextSize(2);
+    display.tft->setTextSize(UI_TEXT_SIZE + 1);
 
     display.tft->setTextColor(ST77XX_GREEN);
     //display.tft->print("Total Nets: ");
@@ -250,7 +250,7 @@ void UI::updateStats(uint32_t currentTime, uint32_t wifiCount, uint32_t count2g4
     display.tft->println(wifi_ops.getTotalBLECount());
     display.tft->setTextColor(ST77XX_WHITE);
     
-    display.tft->setTextSize(1);
+    display.tft->setTextSize(UI_TEXT_SIZE);
   }
 }
 
@@ -310,12 +310,14 @@ void UI::addNodes(Menu * menu, String name, uint8_t color, Menu * child, int pla
 void UI::drawCurrentMenu() {
   if (!current_menu || current_menu->list->size() == 0) return;
 
-  const uint8_t max_visible_items = 7;
-  const uint8_t header_height = 8;
+  display.tft->setRotation(TFT_ROTATION);
 
-  display.tft->setRotation(3);
+  const uint8_t header_height = UI_LINE_HEIGHT;
+  const uint8_t line_height = UI_LINE_HEIGHT;
+  const uint16_t max_visible_items = max((int)1, (display.tft->height() - header_height) / line_height);
+
   display.tft->fillScreen(ST77XX_BLACK);
-  display.tft->setTextSize(1);
+  display.tft->setTextSize(UI_TEXT_SIZE);
   display.tft->setTextWrap(false);
 
   display.tft->setTextColor(ST77XX_WHITE);
@@ -334,7 +336,7 @@ void UI::drawCurrentMenu() {
     if (item_index >= current_menu->list->size()) break;
 
     MenuNode node = current_menu->list->get(item_index);
-    int y = header_height + i * 8;
+    int y = header_height + i * line_height;
 
     // Handle selection color
     if (item_index == current_menu->selected) {
@@ -356,20 +358,20 @@ void UI::drawCurrentMenu() {
     }
 
     // Align file size to the right
-    int textPixelWidth = sizeStr.length() * 6;
-    int xRightAlign = TFT_WIDTH - textPixelWidth;
+    int textPixelWidth = sizeStr.length() * UI_CHAR_WIDTH;
+    int xRightAlign = display.tft->width() - textPixelWidth;
     display.tft->setCursor(xRightAlign, y);
     display.tft->print(sizeStr);
   }
 
   // Scroll indicators
   if (current_menu->scroll_offset > 0) {
-    display.tft->setCursor(TFT_WIDTH - 10, header_height);
+    display.tft->setCursor(display.tft->width() - UI_CHAR_WIDTH, header_height);
     display.tft->setTextColor(ST77XX_WHITE);
     display.tft->print("^");
   }
   if (current_menu->scroll_offset + max_visible_items < current_menu->list->size()) {
-    display.tft->setCursor(TFT_WIDTH - 10, header_height + (max_visible_items - 1) * 8);
+    display.tft->setCursor(display.tft->width() - UI_CHAR_WIDTH, header_height + (max_visible_items - 1) * line_height);
     display.tft->setTextColor(ST77XX_WHITE);
     display.tft->print("v");
   }

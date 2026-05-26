@@ -1567,10 +1567,27 @@ bool WiFiOps::tryConnectToWiFi(unsigned long timeoutMs) {
 
 void WiFiOps::startAccessPoint() {
   display.clearScreen();
+  display.tft->setRotation(TFT_ROTATION);
+  display.tft->setTextSize(UI_TEXT_SIZE);
   display.tft->setCursor(0, 0);
   display.tft->print("Starting AP: ");
   display.tft->println(this->apSSID);
-  WiFi.softAP(this->apSSID, this->apPassword);
+
+  WiFi.disconnect(true, true);
+  delay(100);
+  WiFi.mode(WIFI_AP);
+  WiFi.setSleep(false);
+
+  IPAddress apIP(192, 168, 4, 1);
+  IPAddress gateway(192, 168, 4, 1);
+  IPAddress subnet(255, 255, 255, 0);
+
+  if (!WiFi.softAPConfig(apIP, gateway, subnet))
+    Logger::log(WARN_MSG, "Failed to configure AP IP");
+
+  if (!WiFi.softAP(this->apSSID, this->apPassword, 6, 0, 4))
+    Logger::log(WARN_MSG, "Failed to start access point");
+
   Logger::log(GUD_MSG, "Access Point started");
   Logger::log(GUD_MSG, "IP: ");
   Logger::log(GUD_MSG, WiFi.softAPIP().toString());
@@ -1666,8 +1683,8 @@ bool WiFiOps::uploadToWDG(String filePath, File fileToUpload) {
 
     percent_sent = (totalBytesSent * 100) / fileToUpload.size();
 
-    display.tft->drawRect(0, (TFT_HEIGHT / 3) * 2, TFT_WIDTH, TFT_HEIGHT, ST77XX_BLACK);
-    display.tft->setCursor(0, (TFT_HEIGHT / 3) * 2);
+    display.tft->fillRect(0, (display.tft->height() / 3) * 2, display.tft->width(), display.tft->height() / 3, ST77XX_BLACK);
+    display.tft->setCursor(0, (display.tft->height() / 3) * 2);
 
     display_percent = String(percent_sent) + "%";
     display.drawCenteredText(display_percent, false);
@@ -1809,8 +1826,8 @@ bool WiFiOps::uploadToWigle(String filePath, File fileToUpload) {
     Serial.print(totalBytesSent);
     Serial.println(" bytes...");
     percent_sent = (totalBytesSent * 100) / fileToUpload.size();
-    display.tft->drawRect(0, (TFT_HEIGHT / 3) * 2, TFT_WIDTH, TFT_HEIGHT, ST77XX_BLACK);
-    display.tft->setCursor(0, (TFT_HEIGHT / 3) * 2);
+    display.tft->fillRect(0, (display.tft->height() / 3) * 2, display.tft->width(), display.tft->height() / 3, ST77XX_BLACK);
+    display.tft->setCursor(0, (display.tft->height() / 3) * 2);
     display_percent = (String)percent_sent + "%";
     display.drawCenteredText(display_percent, false);
     client->write(buffer, bytesRead);
@@ -2200,12 +2217,13 @@ void WiFiOps::shutdownAccessPoint(bool ap_active) {
 void WiFiOps::showCountdown() {
   if (millis() - this->last_timer > TIMER_UPDATE) {
     this->last_timer = millis();
-    display.tft->fillRect(0, SMALL_CHAR_HEIGHT * 2, TFT_WIDTH, TFT_HEIGHT - (SMALL_CHAR_HEIGHT * 2), ST77XX_BLACK);
+    display.tft->setTextSize(UI_TEXT_SIZE);
+    display.tft->fillRect(0, SMALL_CHAR_HEIGHT * 2, display.tft->width(), display.tft->height() - (SMALL_CHAR_HEIGHT * 2), ST77XX_BLACK);
     display.tft->setCursor(0, SMALL_CHAR_HEIGHT * 4);
     display.tft->println("Wardring starts...\n");
-    display.tft->setTextSize(2);
+    display.tft->setTextSize(UI_TEXT_SIZE + 1);
     display.tft->println(60 - ((millis() - this->last_web_client_activity) / 1000));
-    display.tft->setTextSize(1);
+    display.tft->setTextSize(UI_TEXT_SIZE);
   }
 }
 

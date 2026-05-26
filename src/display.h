@@ -40,12 +40,12 @@ class Display {
     void main(uint32_t currentTime);
     void clearScreen();
     void ctrlBacklight(bool on = true);
-    void drawCenteredText(String text, bool centerVertically = false);
+    void drawCenteredText(String text, bool centerVertically = false, uint8_t textSize = UI_TEXT_SIZE);
 
   private:
     SPIClass* _spi;
 
-    void drawMonochromeImage160x80(const uint8_t* imageData, int width, int height);
+    void drawMonochromeImageCentered(const uint8_t* imageData, int width, int height);
 
 };
 

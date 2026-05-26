@@ -81,12 +81,21 @@
 #define OFF LOW
 
 #ifdef NM_CYD_C5
-  #define TFT_HEIGHT 240
-  #define TFT_WIDTH  320
+  #define TFT_WIDTH  240
+  #define TFT_HEIGHT 320
+  #define TFT_ROTATION 2
+  #define UI_TEXT_SIZE 1
+  #define UI_SMALL_TEXT_SIZE 1
 #else
-  #define TFT_HEIGHT 80
   #define TFT_WIDTH  160
+  #define TFT_HEIGHT 80
+  #define TFT_ROTATION 3
+  #define UI_TEXT_SIZE 1
+  #define UI_SMALL_TEXT_SIZE 1
 #endif
+
+#define UI_CHAR_WIDTH  (6 * UI_TEXT_SIZE)
+#define UI_LINE_HEIGHT (8 * UI_TEXT_SIZE)
 
 #define TFT_SPI_SPEED 27000000
 
@@ -101,6 +110,12 @@
   #define TOUCH_CS 1
   #define TOUCH_IRQ -1
   #define TFT_BL   25
+  #define TOUCH_ROTATION 0
+  #define TOUCH_CAL_X_MIN 333
+  #define TOUCH_CAL_X_MAX 3466
+  #define TOUCH_CAL_Y_MIN 212
+  #define TOUCH_CAL_Y_MAX 3414
+  #define TOUCH_CAL_FLAGS 2
 #else
   #define TOUCH_CS -1
   #define TFT_BL   27
@@ -135,7 +150,7 @@
 #define LOG_FILE_NAME "wardrive"
 #define SETTING_SANITY "wu"
 
-#define SMALL_CHAR_HEIGHT 8
+#define SMALL_CHAR_HEIGHT UI_LINE_HEIGHT
 
 
 //// Buffer stuff
